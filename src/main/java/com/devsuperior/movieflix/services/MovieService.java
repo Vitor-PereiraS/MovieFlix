@@ -29,21 +29,21 @@ public class MovieService {
 
     @Transactional(readOnly = true)
     public Page<MovieCardDTO> findByGenre(String genreId,Pageable pageable){
-        Pageable newPageable = PageRequest.of(
+        Pageable orderedPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
                 Sort.by("title").ascending()
         );
-        Long genreIdAux = 0L;
-        if((!"0".equals(genreId))){
-            genreIdAux = Long.parseLong(genreId);
-          Page<Movie> page = repository.searchByGenre(genreIdAux, newPageable );
-            return page.map(movie -> new MovieCardDTO(movie));
+
+        if (genreId == null || "0".equals(genreId) || genreId.isEmpty()) {
+            Page<Movie> page = repository.findAll(orderedPageable);
+            return page.map(MovieCardDTO::new);
         }
-         else {
-            Page<Movie> page = repository.searchAll(genreIdAux, newPageable );
-            return page.map(movie -> new MovieCardDTO(movie));
-            }
+
+        else {
+            Page<Movie> page = repository.findByGenreId(Long.parseLong(genreId), orderedPageable);
+            return page.map(MovieCardDTO::new);
+        }
     }
 
 }
